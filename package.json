@@ -6,7 +6,7 @@
       "dev": "set debug=* && ts-node-dev --respawn --transpileOnly ./src/index.ts",
       "build": "gulp",
       "dev:gulp": "npm run build && nodemon --watch ./src -e 'ts' --exec \"gulp dev:build && node dist/index.js\"",
-      "prod": "gulp && node ./dist/index.js",
+      "start": "gulp && node ./dist/index.js",
       "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run",
       "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate -n NewMig"
    },
@@ -32,6 +32,7 @@
       "body-parser": "^1.18.1",
       "class-validator": "^0.11.0",
       "cors": "^2.8.5",
+      "dotenv": "^8.2.0",
       "express": "^4.15.4",
       "helmet": "^3.21.2",
       "inversify": "^5.0.1",

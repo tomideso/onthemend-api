@@ -1,77 +1,84 @@
-import AccountDto from "../Dto/AccountDto";
-import { Redis } from "../config";
 import { sendMail } from "./EmailService";
 import Account from "../entity/Account";
 import AccountRepository from "../Repository/AccountRepository";
-import {getCustomRepository} from "typeorm";
-const moment = require('moment-timezone');
-const crypto = require('crypto');
+import { injectable, inject } from "inversify";
+import TYPES from "../config/types";
+import { Redis } from 'ioredis'
+import { getRandomNumber } from "../utility/utility";
 
 
 
+@injectable()
 export class OTPServiceImpl implements OTPService {
 
-    private accountRepo:AccountRepository;
+    private accountRepo: AccountRepository;
 
-    constructor(){
-        this.accountRepo=getCustomRepository(AccountRepository);
+    private redisClient: Redis;
+
+
+    constructor(@inject(TYPES.Redis) redisClient: Redis,
+        @inject(TYPES.AccountRepo) accountRepo
+    ) {
+        this.redisClient = redisClient;
+        this.accountRepo = accountRepo;
     }
 
-    public send(account: Account,host:string): Promise<any> {
-        const randomToken = crypto.randomBytes(12).toString('hex');
+    public send(account: Account, host: string): Promise<any> {
+        const randomToken = getRandomNumber(4)+"";
         const recipient = account.email;
 
-        const subject = "OnTheMend Account Verification";
-        const body = `Welcome to OnTheMend. To start your free trial you will need to verify your account by tapping on the following link:  <a href="http://${host}/v1/account/verify/${randomToken}">http://${host}/v1/account/verify/${randomToken}</a>`;
+        const subject = "OTP code for Account Email Verification";
+        const body = `You are few steps away from completing your Registration. <p>Please, use the code <strong>${randomToken}</strong> to verify your email<p>`;
 
         const key = `${account.id}:emailotp`
         //store token for an hour
-        Redis.setex(randomToken, 60*60*60, recipient);
-        Redis.setex(key, 60*60*60, randomToken);
+        this.redisClient.setex(randomToken, 60 * 60 * 60, recipient);
+        this.redisClient.setex(key, 60 * 60 * 60, randomToken);
 
-        return sendMail({subject,recipient,body});
+        return sendMail({ subject, recipient, body });
     }
 
 
-    public async verify(token: string):Promise<Account> {
+    public async verify(token: string): Promise<Account> {
 
         //store token for an hour
-        const accountEmail = await Redis.get(token).catch(err=>false);
+        const accountEmail = await this.redisClient.get(token).catch(err => false);
 
-        if(!accountEmail){
+        if (!accountEmail) {
             throw "The verification link is invalid";
         }
-        
+
+        // this.redisClient.del(token);
         return await this.accountRepo.findByEmail(<string>accountEmail);
     }
 
 
-    public async resend(accountId:string,host:string):Promise<any>{
+    public async resend(accountId: string, host: string): Promise<any> {
         const key = `${accountId}:emailotp`
-        const token = await Redis.get(key).catch(err=>false);
+        const token = await this.redisClient.get(key).catch(err => false);
 
-        if(token){
-            Redis.del(token as string);
-            Redis.del(key);
+        if (token) {
+            this.redisClient.del(token as string);
+            this.redisClient.del(key);
         }
-        
-       try{
-            const account =await Account.findOneOrFail(accountId,{
+
+        try {
+            const account = await Account.findOneOrFail(accountId, {
                 select: ["email", "id"]
             });
 
-            return this.send(account,host);
-       }
-       catch(e){
-           throw "Can't find account with id "+accountId;
-       }
+            return this.send(account, host);
+        }
+        catch (e) {
+            throw "Can't find account with id " + accountId;
+        }
     }
 }
 
 
 
 export interface OTPService {
-    send(account: Account,host:string): Promise<any>;
-    verify(token: string,): Promise<Account>;
-    resend(accountId:string,host:string): Promise<any>;
+    send(account: Account, host: string): Promise<any>;
+    verify(token: string, ): Promise<Account>;
+    resend(accountId: string, host: string): Promise<any>;
 }

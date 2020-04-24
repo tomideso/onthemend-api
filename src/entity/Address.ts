@@ -1,9 +1,8 @@
 import {Entity, Column,OneToOne,JoinColumn} from "typeorm";
 import { BaseModel } from "./BaseModel";
-import { IsNotEmpty,IsIn } from "class-validator";
+import { IsNotEmpty } from "class-validator";
 import AddressDto from "../Dto/AddressDto";
 import UserProfile from "./UserProfile";
-// import { Photo } from "./Photo";
  
 
 
@@ -11,18 +10,22 @@ import UserProfile from "./UserProfile";
 export default class Address extends BaseModel implements AddressDto {
 
     @Column()
+    @IsNotEmpty()
     address1:string;
 
     @Column()
     address2:string;
 
     @Column()
+    @IsNotEmpty()
     zipcode:string;
 
     @Column()
+    @IsNotEmpty()
     city:string;
 
     @Column()
+    @IsNotEmpty()
     state:string;
 
     @Column()
@@ -33,6 +36,7 @@ export default class Address extends BaseModel implements AddressDto {
 
     @OneToOne(type => UserProfile)
     @JoinColumn()
+    @IsNotEmpty()
     userProfile: UserProfile
 
 

@@ -1,6 +1,6 @@
 import userProfileDto from './UserProfileDto'
 
-export default interface AccountDto {
+export default interface AddressDto {
 
     id?:string;
     address1:string;

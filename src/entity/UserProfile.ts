@@ -1,8 +1,9 @@
-import {Entity, Column,OneToOne,JoinColumn,OneToMany} from "typeorm";
+import {Entity, Column,OneToOne,JoinColumn,OneToMany, ManyToOne} from "typeorm";
 import { BaseModel } from "./BaseModel";
 import { IsNotEmpty,IsIn } from "class-validator";
 import  Account from "./Account";
 import UserProfileDto from "../Dto/UserProfileDto";
+import Address from "./Address";
 // import { Photo } from "./Photo";
  
 const Gender =['M','F','-']
@@ -56,10 +57,16 @@ export default class UserProfile extends BaseModel implements UserProfileDto {
     @Column()
     age: Date;
 
+    title:string;
+
     @OneToOne(type => Account,account=>account.userProfile,{nullable:false})
     @IsNotEmpty()
     @JoinColumn({name:'account_id'})
     account:Account;
+
+
+    @ManyToOne(type => Address,address=>address.userProfile,{nullable:false})
+    address:Address;
 
     // @OneToMany(type => Photo, photo => photo.user)
     // photos: Photo[];

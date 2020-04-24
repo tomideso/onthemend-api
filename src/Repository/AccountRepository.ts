@@ -1,6 +1,8 @@
 import Account from "../entity/Account";
-import { EntityRepository, Repository, EntityManager } from "typeorm";
+import { EntityRepository, Repository, EntityManager, getCustomRepository } from "typeorm";
 import AccountDto from "../Dto/AccountDto";
+import TYPES from "../config/types";
+import container from "../container/inversify.config";
 
 
 @EntityRepository(Account)

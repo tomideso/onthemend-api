@@ -1,12 +1,18 @@
 import Account from '../entity/Account'
 import * as jwt from 'jsonwebtoken';
-import { JWT_CONFIG as CONFIG, Redis } from '../config/index';
+import { JWT_CONFIG as CONFIG} from '../config/index';
+import container from "../container/inversify.config";
+import { Redis } from "ioredis";
+import TYPES from "../config/types";
 const randtoken = require('rand-token');
 
 
-export const refreshToken = async ({email,refresh_token})=>{
 
-    const found = await Redis.get(refresh_token).catch(err=>false);
+
+export const refreshToken = async ({email,refresh_token})=>{
+    const RedisClient = container.get<Redis>(TYPES.Redis)
+
+    const found = await RedisClient.get(refresh_token).catch(err=>false);
 
     if(!found){
         throw "Invalid Refresh Token"
@@ -35,6 +41,7 @@ export const refreshToken = async ({email,refresh_token})=>{
 
 
 export const generateAccessToken = (user):Access_Token => {
+    const RedisClient = container.get<Redis>(TYPES.Redis)
 
     const { jwtSecret, token_expiration } = CONFIG;
 
@@ -45,7 +52,7 @@ export const generateAccessToken = (user):Access_Token => {
     });
 
     //RefreshToken lifetime is set to 2ice lifetime of access_token
-    Redis.setex(refresh_token, token_expiration * 2, JSON.stringify(user));
+    RedisClient.setex(refresh_token, token_expiration * 2, JSON.stringify(user));
 
     return {
         token_type: 'bearer',

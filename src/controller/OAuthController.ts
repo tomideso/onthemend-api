@@ -1,10 +1,14 @@
 import { NextFunction, Request, Response, Router } from "express";
-import { Redis, JWT_CONFIG } from "../config";
+import { JWT_CONFIG } from "../config";
 import { refreshToken } from "../services/OAuthService";
+import container from "../container/inversify.config";
+import { Redis } from "ioredis";
+import TYPES from "../config/types";
 
 
 export default () => {
-
+    
+    const Redis = container.get<Redis>(TYPES.Redis)
     const router = Router();
 
     router.post('/revoke', async (req: Request, res: Response, next: NextFunction) => {
