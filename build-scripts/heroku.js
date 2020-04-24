@@ -2,7 +2,7 @@
 
 if ('HEROKU' in process.env || ('DYNO' in process.env && process.env.HOME === '/app')){
 
-  const pkg = require('../../package.json');
+  const pkg = require('./package.json');
   const ChildProcess = require('child_process');
 
 
