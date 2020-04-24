@@ -8,12 +8,12 @@ export abstract class BaseModel extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({type:'datetime'})
-  @CreateDateColumn({type:'datetime'})
+  @Column({type:'timestamptz'})
+  @CreateDateColumn({type:'timestamptz'})
   createdAt: Date;
 
-  @Column({type:'datetime'})
-  @UpdateDateColumn({type:'datetime'})
+  @Column({type:'timestamptz'})
+  @UpdateDateColumn({type:'timestamptz'})
   updatedAt: Date;
 
   getId() {
